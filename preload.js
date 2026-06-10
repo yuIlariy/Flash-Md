@@ -1,8 +1,6 @@
 import { webcrypto } from 'node:crypto';
 
+// Only set crypto if it does not already exist
 if (!globalThis.crypto) {
-    Object.defineProperty(globalThis, 'crypto', {
-        value: webcrypto,
-        configurable: true
-    });
+    globalThis.crypto = webcrypto;
 }
