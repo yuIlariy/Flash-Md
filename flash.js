@@ -1,35 +1,31 @@
 import { execSync } from 'child_process';
-import fs from 'fs';
-import path from 'path';
-import { fileURLToPath } from 'url';
+import { createRequire } from 'module';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+const require = createRequire(import.meta.url);
 
-console.log('🔧 Fixing sharp module...');
+console.log('🔧 Checking sharp module...');
 
 try {
-    const nodeVersion = process.version;
-    console.log(`Node version: ${nodeVersion}`);
-    
-    const sharpPaths = [
-        'node_modules/sharp',
-        'node_modules/wa-sticker-formatter/node_modules/sharp'
-    ];
-    
-    for (const sharpPath of sharpPaths) {
-        const fullPath = path.join(__dirname, sharpPath);
-        if (fs.existsSync(fullPath)) {
-            fs.rmSync(fullPath, { recursive: true, force: true });
-        }
+    console.log(`Node version: ${process.version}`);
+
+    try {
+        require.resolve('sharp');
+        await import('sharp');
+
+        console.log('✅ Sharp is installed and working');
+        process.exit(0);
+    } catch {
+        console.log('⚠️ Sharp not found, installing...');
+
+        execSync('npm install sharp@0.33.5 --force', {
+            stdio: 'inherit'
+        });
+
+        await import('sharp');
+        console.log('✅ Sharp installed successfully');
+        process.exit(0);
     }
-    
-    execSync('npm rebuild sharp --force', { stdio: 'inherit' });
-    
-    await import('sharp');
-    console.log('✅ Sharp module fixed successfully!');
-    
 } catch (error) {
-    console.error('❌ Sharp fix failed:', error.message);
+    console.error('❌ Sharp fix failed:', error);
     process.exit(1);
 }
