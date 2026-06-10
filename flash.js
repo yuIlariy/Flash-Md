@@ -1,30 +1,30 @@
 import { execSync } from 'child_process';
-import { createRequire } from 'module';
+import path from 'path';
+import { fileURLToPath } from 'url';
 
-const require = createRequire(import.meta.url);
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
-console.log('🔧 Checking sharp module...');
+console.log('🔧 Fixing sharp module...');
 
 try {
-    console.log(`Node version: ${process.version}`);
+    const nodeVersion = process.version;
+    console.log(`Node version: ${nodeVersion}`);
 
-    try {
-        require.resolve('sharp');
-        await import('sharp');
+    // Do NOT delete sharp anymore
+    console.log('📦 Keeping installed sharp module...');
 
-        console.log('✅ Sharp is installed and working');
-        process.exit(0);
-    } catch {
-        console.log('⚠️ Sharp not found, installing...');
+    // Rebuild sharp safely
+    execSync('npm rebuild sharp --force', {
+        stdio: 'inherit',
+        cwd: __dirname
+    });
 
-        execSync('npm install sharp@0.33.5 --force', {
-            stdio: 'inherit'
-        });
+    // Test import
+    await import('sharp');
 
-        await import('sharp');
-        console.log('✅ Sharp installed successfully');
-        process.exit(0);
-    }
+    console.log('✅ Sharp module fixed successfully!');
+
 } catch (error) {
     console.error('❌ Sharp fix failed:', error);
     process.exit(1);
